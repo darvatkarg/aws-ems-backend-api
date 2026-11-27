@@ -1,0 +1,30 @@
+# OLD CODE (MilesWeb mPanel): By Dhananjay
+# name: Deploy Backend to MilesWeb mPanel
+# ...
+
+name: Deploy EMS Backend to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            cd /home/ubuntu/repo-clone/ems_backend
+            git pull origin main
+            npm install --omit=dev
+            pm2 restart ems-backend --update-env
+            pm2 save
